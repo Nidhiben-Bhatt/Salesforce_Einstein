@@ -1,4 +1,4 @@
-public class EinsteinVision_Admin {
+public class awsFileTest {
 @AuraEnabled
     public static void createDatasetFromUrl(String zipUrl) {
         EinsteinVision_PredictionService service = new EinsteinVision_PredictionService();
@@ -37,5 +37,69 @@ public class EinsteinVision_Admin {
         EinsteinVision_Model[] models = service.getModels(datasetId);
         system.debug(models);
         return models;
+    }
+    
+    @AuraEnabled
+    public static list<awsFileTestWrapper.awswrapper> getImageAsBlob() {
+        
+        List<NEILON__File__c> fList = [SELECT Name FROM NEILON__File__c];
+        system.debug('flist '+fList);
+        Map<Blob,String> bList = new Map<blob,String>();
+        for(NEILON__File__c nm:fList)
+        {
+            Http h = new Http();
+            HttpRequest req = new HttpRequest();
+            string firstImageURL = 'https://s3.amazonaws.com/sfdc-einstein-demo/commonhouses/'+nm.Name;
+            //Replace any spaces with %20
+            system.debug('firstImageURL'+firstImageURL);
+            firstImageURL = firstImageURL.replace(' ', '%20');
+            req.setEndpoint(firstImageURL);
+            req.setMethod('GET');
+            //If you want to get a PDF file the Content Type would be 'application/pdf'
+            req.setHeader('Content-Type', 'image/jpg');
+            req.setCompressed(true);
+            req.setTimeout(60000);
+            
+            HttpResponse res = null;
+            res = h.send(req);
+            //These next three lines can show you the actual response for dealing with error situations
+            string responseValue = '';
+            responseValue = res.getStatus();
+            system.debug('Response Body for File: ' + responseValue);
+            //This is the line that does the magic.  We can get the blob of our file.  This getBodyAsBlob method was added in the Spring 2012 release and version 24 of the API.
+            blob image = res.getBodyAsBlob();
+            system.debug('blob'+image);
+           
+            bList.put(res.getBodyAsBlob(),nm.Name);
+        }
+        
+        
+        
+        EinsteinVision_PredictionService service = new EinsteinVision_PredictionService();
+        EinsteinVision_Dataset[] datasets = service.getDatasets();
+                    list<awsFileTestWrapper.awswrapper> listaws=new list<awsFileTestWrapper.awswrapper>();
+
+        for (EinsteinVision_Dataset dataset : datasets) {
+            
+            EinsteinVision_Model[] models = service.getModels(dataset);
+            EinsteinVision_Model model = models.get(0);
+          Set<blob>  bList2=bList.keySet();
+            for(Blob fileBlob:bList2)
+            {
+                EinsteinVision_PredictionResult result = service.predictBlob(model.modelId,  fileBlob, '');
+                EinsteinVision_Probability probability = result.probabilities.get(0);
+                system.debug('1.'+result.probabilities.get(0).label+'----'+result.probabilities.get(0).probability+' 2.'+result.probabilities.get(1).label+'----'+result.probabilities.get(1).probability+
+                             ' 3.'+result.probabilities.get(2).label+'----'+result.probabilities.get(2).probability
+                            +' 4.'+result.probabilities.get(3).label+'----'+result.probabilities.get(3).probability
+                            +' 5.'+result.probabilities.get(4).label+'----'+result.probabilities.get(4).probability);          
+           awsFileTestWrapper.awswrapper aws=new awsFileTestWrapper.awswrapper();
+                aws.filename=blist.get(fileblob);
+                aws.mylabel=result.probabilities.get(0).label;
+                aws.prob=result.probabilities.get(0).probability;
+                listaws.add(aws);
+            }
+        }
+       
+      return listaws;  
     }
 }
