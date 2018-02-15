@@ -1,0 +1,26 @@
+<aura:component controller="awsFileTest" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,
+                                      force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:attribute name="files" type="Object[]"/>
+    <aura:attribute name="IsSpinner" type="Boolean"/>
+    <aura:attribute name="contents" type="list" />
+    <aura:attribute name="probability" type="list"/>
+    <aura:attribute name="prefixURL" type="String" default="https://s3.amazonaws.com/sfdc-einstein-demo/resume/"/>
+    <center>
+        <p style="font-family:serif;font-size: 40px;">Property.com</p>
+        <div style="border-color: #2566a8;border-style: solid;border-width: 4px 4px 4px 4px;width:400px;"><br/>  
+            <label style="font-family:serif;font-size: 20px;">search: </label>
+            <ui:inputText class="textbox" aura:id="select" /><br/><br/>
+            <lightning:button onclick="{!c.extractfile}">search</lightning:button><br/><br/>
+            <aura:if isTrue="{!v.IsSpinner}">
+                <lightning:spinner variant="brand"  size="large" />
+            </aura:if></div>
+    </center>
+    <table>
+        <tr><aura:iteration items="{!v.contents}" var="content" indexVar="i">
+            <td> <img src="{!v.prefixURL + content}" width="300"/></td> 
+            </aura:iteration></tr>
+        <tr><aura:iteration items="{!v.probability}" var="prob" indexVar="i">
+            <td> probability : {!prob}</td> 
+            </aura:iteration></tr>
+    </table>   
+</aura:component>
