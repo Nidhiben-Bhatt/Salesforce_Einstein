@@ -1,0 +1,41 @@
+public class EinsteinVision_Admin {
+@AuraEnabled
+    public static void createDatasetFromUrl(String zipUrl) {
+        EinsteinVision_PredictionService service = new EinsteinVision_PredictionService();
+        service.createDatasetFromUrlAsync(zipUrl);
+        system.debug(service);
+    }
+    
+    @AuraEnabled
+    public static List<EinsteinVision_Dataset> getDatasets() {
+        EinsteinVision_PredictionService service = new EinsteinVision_PredictionService();
+        EinsteinVision_Dataset[] datasets = service.getDatasets();
+        system.debug('service---'+service);
+        system.debug('datasets ----'+datasets);
+        return datasets;
+    }
+    
+    @AuraEnabled
+    public static String trainDataset(Decimal datasetId) {
+        EinsteinVision_PredictionService service = new EinsteinVision_PredictionService();
+        EinsteinVision_Model model = service.trainDataset(Long.valueOf(String.valueOf(datasetId)), 'Training', 0, 0, '');
+        system.debug('service---'+service);
+        system.debug('model ----'+model);
+         system.debug('model.modelId ----'+model.modelId);
+        return model.modelId;
+    }
+    
+    @AuraEnabled
+    public static void deleteDataset(Long datasetId) {
+        EinsteinVision_PredictionService service = new EinsteinVision_PredictionService();
+        service.deleteDataset(datasetId);
+    }
+    
+    @AuraEnabled
+    public static List<EinsteinVision_Model> getModels(Long datasetId) {
+        EinsteinVision_PredictionService service = new EinsteinVision_PredictionService();
+        EinsteinVision_Model[] models = service.getModels(datasetId);
+        system.debug(models);
+        return models;
+    }
+}
